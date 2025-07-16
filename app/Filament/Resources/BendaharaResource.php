@@ -65,25 +65,25 @@ class BendaharaResource extends Resource
                         ->default(fn (callable $get) => Siswa::find($get('siswa_id'))?->nama),
 
                     TextInput::make('jumlah')
-                        ->label('Jumlah Kas Dibayar')
-                        ->required()
-                        ->extraAttributes([
-                            'x-data' => '{}',
-                            'x-on:input' => "
-                                \$el.value = \$el.value
-                                    .replace(/[^\\d]/g, '')
-                                    .replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.');
-                            ",
-                            'inputmode' => 'numeric',
-                            'placeholder' => 'Contoh: 50.000',
-                        ])
-                        ->dehydrateStateUsing(fn ($state) => str_replace('.', '', $state))
-                        ->rule('numeric') // Gunakan rule validasi Laravel, bukan ->numeric()
-                        ->minValue(0)
-                        ->maxValue(10000000),
-                                    ]),
-                            ]);
-                        }
+                    ->label('Jumlah Kas Dibayar')
+                    ->required()
+                    ->extraAttributes([
+                        'x-data' => '{}',
+                        'x-on:input' => "
+                            \$el.value = \$el.value
+                                .replace(/[^\\d]/g, '')
+                                .replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.');
+                        ",
+                        'inputmode' => 'numeric',
+                        'placeholder' => 'Contoh: 50.000',
+                    ])
+                    ->dehydrateStateUsing(fn ($state) => str_replace('.', '', $state))
+                    ->rule('numeric') // Gunakan rule validasi Laravel, bukan ->numeric()
+                    ->minValue(0)
+                    ->maxValue(10000000),
+                                ]),
+                        ]);
+                    }
 
     public static function table(Table $table): Table
     {

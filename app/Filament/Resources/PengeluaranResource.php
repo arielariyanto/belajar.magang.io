@@ -46,8 +46,30 @@ class PengeluaranResource extends Resource
 
                 TextInput::make('jumlah')
                     ->label('Jumlah Pengeluaran')
+                    ->required()
+                    ->extraAttributes([
+                        'x-data' => '{}',
+                        'x-on:input' => "
+                            \$el.value = \$el.value
+                                .replace(/[^\\d]/g, '')
+                                .replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.');
+                        ",
+                        'inputmode' => 'numeric',
+                        'placeholder' => 'Contoh: 50.000',
+                    ])
+                    ->dehydrateStateUsing(fn ($state) => str_replace('.', '', $state))
                     ->numeric()
-                    ->required(),
+                    ->minValue(0)
+                    ->maxValue(10000000)
+                    ->rule(function () {
+                        return function (string $attribute, $value, $fail) {
+                            $kasSekarang = \App\Models\Bendahara::sum('jumlah') - \App\Models\Pengeluaran::sum('jumlah');
+                            if ((int) str_replace('.', '', $value) > $kasSekarang) {
+                                $fail("❌ Uang kas tidak cukup. Sisa kas hanya Rp " . number_format($kasSekarang, 0, ',', '.'));
+                            }
+                        };
+                    }),
+
 
                 Textarea::make('keterangan')
                     ->label('Keterangan')
