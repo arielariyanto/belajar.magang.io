@@ -13,6 +13,7 @@ class Bendahara extends Model
         'nama_bendahara', 
         'kelas',
         'siswa_id',
+        'jurusan',
         'jumlah'
     ];
 

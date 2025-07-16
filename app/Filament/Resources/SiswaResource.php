@@ -55,6 +55,7 @@ class SiswaResource extends Resource
                     'RPL' => 'REKAYASA PERANGKAT LUNAK',
                     'AKL' => 'AKUNTANSI',
                 ])
+                ->searchable(),
             ]),
         ]);
     }

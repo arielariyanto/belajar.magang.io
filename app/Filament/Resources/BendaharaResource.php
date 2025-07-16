@@ -80,7 +80,7 @@ class BendaharaResource extends Resource
                 Tables\Columns\TextColumn::make('kelas')->label('Kelas'),
                 Tables\Columns\TextColumn::make('siswa.nisn')->label('NISN Siswa'),
                 Tables\Columns\TextColumn::make('siswa.nama')->label('Nama Siswa'),
-                Tables\Columns\TextColumn::make('jurusan')->label('Jurusan'),
+                Tables\Columns\TextColumn::make('siswa.jurusan_id')->label('Jurusan'), 
                 Tables\Columns\TextColumn::make('jumlah')->label('Jumlah'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat Pada')

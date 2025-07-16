@@ -11,7 +11,7 @@ class Siswa extends Model // ✅ Awalan huruf besar!
     use HasFactory;
     protected $table = 'siswas'; // ✅ Nama tabel sesuai migration
 
-    protected $fillable = ['nisn', 'nama', 'kelas', 'jurusan'];
+    protected $fillable = ['nisn', 'nama', 'kelas', 'jurusan_id'];
 
     public function getLabelAttribute()
     {
@@ -19,6 +19,7 @@ class Siswa extends Model // ✅ Awalan huruf besar!
         
 
     }
+
 
 }
 
