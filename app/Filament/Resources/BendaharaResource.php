@@ -66,11 +66,24 @@ class BendaharaResource extends Resource
 
                     TextInput::make('jumlah')
                         ->label('Jumlah Kas Dibayar')
-                        ->numeric()
-                        ->required(),
-                ]),
-        ]);
-    }
+                        ->required()
+                        ->extraAttributes([
+                            'x-data' => '{}',
+                            'x-on:input' => "
+                                \$el.value = \$el.value
+                                    .replace(/[^\\d]/g, '')
+                                    .replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.');
+                            ",
+                            'inputmode' => 'numeric',
+                            'placeholder' => 'Contoh: 50.000',
+                        ])
+                        ->dehydrateStateUsing(fn ($state) => str_replace('.', '', $state))
+                        ->rule('numeric') // Gunakan rule validasi Laravel, bukan ->numeric()
+                        ->minValue(0)
+                        ->maxValue(10000000),
+                                    ]),
+                            ]);
+                        }
 
     public static function table(Table $table): Table
     {
@@ -80,24 +93,31 @@ class BendaharaResource extends Resource
                 Tables\Columns\TextColumn::make('kelas')->label('Kelas'),
                 Tables\Columns\TextColumn::make('siswa.nisn')->label('NISN Siswa'),
                 Tables\Columns\TextColumn::make('siswa.nama')->label('Nama Siswa'),
-                Tables\Columns\TextColumn::make('siswa.jurusan_id')->label('Jurusan'), 
-                Tables\Columns\TextColumn::make('jumlah')->label('Jumlah'),
+                Tables\Columns\TextColumn::make('siswa.jurusan_id')->label('Jurusan'),
+                Tables\Columns\TextColumn::make('jumlah')
+                    ->label('Jumlah')  
+                    ->money('IDR', true)
+                    ->sortable()
+                    ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.'))
+                    ->alignLeft(),
+            
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat Pada')
                     ->dateTime('d M Y H:i'),
 
-                Tables\Columns\TextColumn::make('sisa_kas')
-                    ->label('💰 Sisa Kas Saat Ini')
+                // Sisa Kas hanya ditampilkan sekali, bukan per baris data
+                Tables\Columns\TextColumn::make('dummy') // Gunakan nama palsu
+                    ->label('Sisa Kas Saat Ini')
                     ->getStateUsing(function () {
                         $pemasukan = \App\Models\Bendahara::sum('jumlah');
                         $pengeluaran = \App\Models\Pengeluaran::sum('jumlah');
                         return 'Rp ' . number_format($pemasukan - $pengeluaran, 0, ',', '.');
                     })
                     ->columnSpanFull()
-                    ->extraAttributes(['class' => 'font-bold text-danger-700'])
-                    ->alignRight()
+                    ->extraAttributes(['class' => 'font-bold'])
+                    ->alignLeft()
                     ->visible(fn () => true),
-                ])
+            ])
 
             ->filters([
                 Filter::make('nama_siswa')

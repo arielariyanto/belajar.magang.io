@@ -2,18 +2,20 @@
 
 namespace App\Filament\Resources;
 
-use App\Models\Pengeluaran;
-use App\Models\Bendahara;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
+use App\Models\Bendahara;
 use Filament\Tables\Table;
+use App\Models\Pengeluaran;
 use Filament\Resources\Resource;
-use App\Filament\Resources\PengeluaranResource\Pages;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Placeholder;
+use App\Filament\Resources\PengeluaranResource\Pages;
+use Filament\Forms\Components\Group;
 
 class PengeluaranResource extends Resource
 {
@@ -50,6 +52,17 @@ class PengeluaranResource extends Resource
                 Textarea::make('keterangan')
                     ->label('Keterangan')
                     ->maxLength(255),
+
+                TextInput::make('sisa_kas_saat_ini')
+                    ->label('💰 Kas Saat Ini')
+                    ->disabled()
+                    ->dehydrated(false) // agar tidak dikirim ke database
+                    ->default(function () {
+                        $pemasukan = \App\Models\Bendahara::sum('jumlah');
+                        $pengeluaran = \App\Models\Pengeluaran::sum('jumlah');
+                        return 'Rp ' . number_format($pemasukan - $pengeluaran, 0, ',', '.');
+                    })
+                    ->extraAttributes(['class' => 'text-danger font-bold text-xl']),
             ]);
     }
 
@@ -60,8 +73,24 @@ class PengeluaranResource extends Resource
                 Tables\Columns\TextColumn::make('bendahara.nama_bendahara')->label('Nama Bendahara'),
                 Tables\Columns\TextColumn::make('nama_kegiatan')->label('Nama Kegiatan'),
                 Tables\Columns\TextColumn::make('tanggal')->label('Tanggal')->date('d M Y'),
-                Tables\Columns\TextColumn::make('jumlah')->label('Jumlah')->money('IDR', true),
+                Tables\Columns\TextColumn::make('jumlah')->label('Jumlah')
+                    ->money('IDR', true)
+                    ->sortable()
+                    ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.'))
+                    ->alignLeft(),
                 Tables\Columns\TextColumn::make('keterangan')->label('Keterangan')->wrap(),
+
+                Tables\Columns\TextColumn::make('sisa_kas')
+                    ->label('💰 Sisa Kas Saat Ini')
+                    ->getStateUsing(function () {
+                        $pemasukan = \App\Models\Bendahara::sum('jumlah');
+                        $pengeluaran = \App\Models\Pengeluaran::sum('jumlah');
+                        $sisa = $pemasukan - $pengeluaran;
+                        return 'Rp ' . number_format($sisa, 0, ',', '.');
+                    })
+                    ->columnSpanFull()
+                    ->extraAttributes(['class' => 'font-bold text-green-700 text-right'])
+                    ->visible(fn () => true), // biar selalu tampil
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -72,6 +101,8 @@ class PengeluaranResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+
+
     }
 
     public static function getRelations(): array

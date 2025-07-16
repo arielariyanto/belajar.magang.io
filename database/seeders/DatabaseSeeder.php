@@ -21,12 +21,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@test.com',
             'password' => Hash::make('test@test.com'),
         ]);
-
-        // Buat 20 siswa dulu
-        Siswa::factory()->count(20)->create();
-
-        // Baru buat 30 kas bendahara
-        Bendahara::factory()->count(30)->create();
     }
     }
+
 
