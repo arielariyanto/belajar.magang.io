@@ -32,7 +32,14 @@ class PengeluaranResource extends Resource
             ->schema([
                 Select::make('bendahara_id')
                     ->label('Nama Bendahara')
-                    ->options(Bendahara::all()->pluck('nama_bendahara', 'id'))
+                    ->options(
+                        \App\Models\Bendahara::query()
+                            ->selectRaw('MIN(id) as id, nama_bendahara')
+                            ->groupBy('nama_bendahara')
+                            ->orderBy('nama_bendahara')
+                            ->get()
+                            ->pluck('nama_bendahara', 'id')
+                    )
                     ->searchable()
                     ->required(),
 
@@ -57,7 +64,7 @@ class PengeluaranResource extends Resource
                         'inputmode' => 'numeric',
                         'placeholder' => 'Contoh: 50.000',
                     ])
-                    ->dehydrateStateUsing(fn ($state) => str_replace('.', '', $state))
+                    ->dehydrateStateUsing(fn($state) => str_replace('.', '', $state))
                     ->numeric()
                     ->minValue(0)
                     ->maxValue(10000000)
@@ -92,13 +99,13 @@ class PengeluaranResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('bendahara.nama_bendahara')->label('Nama Bendahara'),
-                Tables\Columns\TextColumn::make('nama_kegiatan')->label('Nama Kegiatan'),
+                Tables\Columns\TextColumn::make('bendahara.nama_bendahara')->label('Nama Bendahara') ,
+                Tables\Columns\TextColumn::make('nama_kegiatan')->label('Nama Kegiatan')->searchable(),
                 Tables\Columns\TextColumn::make('tanggal')->label('Tanggal')->date('d M Y'),
                 Tables\Columns\TextColumn::make('jumlah')->label('Jumlah')
                     ->money('IDR', true)
                     ->sortable()
-                    ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.'))
+                    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->alignLeft(),
                 Tables\Columns\TextColumn::make('keterangan')->label('Keterangan')->wrap(),
 
@@ -112,7 +119,7 @@ class PengeluaranResource extends Resource
                     })
                     ->columnSpanFull()
                     ->extraAttributes(['class' => 'font-bold text-green-700 text-right'])
-                    ->visible(fn () => true), // biar selalu tampil
+                    ->visible(fn() => true), // biar selalu tampil
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -123,8 +130,6 @@ class PengeluaranResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
-
-
     }
 
     public static function getRelations(): array

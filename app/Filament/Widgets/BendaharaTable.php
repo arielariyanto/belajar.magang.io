@@ -35,7 +35,8 @@ class BendaharaTable extends BaseWidget
 
                 Tables\Columns\TextColumn::make('jumlah')
                     ->label('Jumlah')
-                    ->money('IDR'),
+                    ->money('Rp')
+                    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.')),
             ]);
     }
 }

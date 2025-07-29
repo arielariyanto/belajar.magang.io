@@ -13,7 +13,7 @@ class Bendahara extends Model
         'nama_bendahara', 
         'kelas',
         'siswa_id',
-        'jurusan',
+        'jurusan_id',
         'jumlah'
     ];
 
@@ -32,4 +32,10 @@ class Bendahara extends Model
     {
         return $this->hasMany(\App\Models\Pengeluaran::class);
     }
+
+    public function jurusan()
+    {
+        return $this->belongsTo(Jurusan::class, 'jurusan_id', 'kode_jurusan');
+    }
+
 }

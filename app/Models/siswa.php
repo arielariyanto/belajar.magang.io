@@ -16,11 +16,10 @@ class Siswa extends Model // ✅ Awalan huruf besar!
     public function getLabelAttribute()
     {
         return "{$this->nisn} - {$this->nama}";
-        
-
     }
 
-
+    public function jurusan()
+    {
+        return $this->belongsTo(Jurusan::class, 'jurusan_id', 'kode_jurusan');
+    }
 }
-
-

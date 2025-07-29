@@ -40,19 +40,32 @@ class BendaharaResource extends Resource
                     'XI' => 'XI',
                     'XII' => 'XII',
                 ])
-                ->searchable(),
+                ->searchable()
+                ->reactive(),
 
             Forms\Components\Section::make('Input Kas Siswa')
-                ->description('Pilih siswa berdasarkan NISN dan lihat nama otomatis.')
+                ->description('Pilih siswa berdasarkan NISN')
                 ->schema([
                     Select::make('siswa_id')
                         ->label('Pilih Siswa (NISN)')
-                        ->options(Siswa::all()->pluck('nisn', 'id')) // ganti 'label' jadi 'nisn'
+                        ->options(function (callable $get) {
+                            $kelas = $get('kelas');
+                            if (!$kelas) {
+                                return [];
+                            }
+
+                            return \App\Models\Siswa::where('kelas', $kelas)
+                                ->get()
+                                ->mapWithKeys(function ($siswa) {
+                                    return [$siswa->id => $siswa->nisn . ' - ' . $siswa->nama];
+                                })
+                                ->toArray();
+                        })
                         ->searchable()
                         ->required()
                         ->reactive()
                         ->afterStateUpdated(function ($state, callable $set) {
-                            $siswa = Siswa::find($state);
+                            $siswa = \App\Models\Siswa::find($state);
                             if ($siswa) {
                                 $set('nama_siswa', $siswa->nama);
                             }
@@ -62,45 +75,47 @@ class BendaharaResource extends Resource
                         ->label('Nama Siswa')
                         ->disabled()
                         ->dehydrated(false)
-                        ->default(fn (callable $get) => Siswa::find($get('siswa_id'))?->nama),
+                        ->default(fn(callable $get) => Siswa::find($get('siswa_id'))?->nama),
 
                     TextInput::make('jumlah')
-                    ->label('Jumlah Kas Dibayar')
-                    ->required()
-                    ->extraAttributes([
-                        'x-data' => '{}',
-                        'x-on:input' => "
+                        ->label('Jumlah Kas Dibayar')
+                        ->required()
+                        ->extraAttributes([
+                            'x-data' => '{}',
+                            'x-on:input' => "
                             \$el.value = \$el.value
                                 .replace(/[^\\d]/g, '')
                                 .replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.');
                         ",
-                        'inputmode' => 'numeric',
-                        'placeholder' => 'Contoh: 50.000',
-                    ])
-                    ->dehydrateStateUsing(fn ($state) => str_replace('.', '', $state))
-                    ->rule('numeric') // Gunakan rule validasi Laravel, bukan ->numeric()
-                    ->minValue(0)
-                    ->maxValue(10000000),
-                                ]),
-                        ]);
-                    }
+                            'inputmode' => 'numeric',
+                            'placeholder' => 'Contoh: 50.000',
+                        ])
+                        ->dehydrateStateUsing(fn($state) => str_replace('.', '', $state))
+                        ->rule('numeric') // Gunakan rule validasi Laravel, bukan ->numeric()
+                        ->minValue(0)
+                        ->maxValue(10000000),
+                ]),
+        ]);
+    }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nama_bendahara')->label('Nama Bendahara'),
+                Tables\Columns\TextColumn::make('nama_bendahara')->label('Nama Bendahara')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('kelas')->label('Kelas'),
                 Tables\Columns\TextColumn::make('siswa.nisn')->label('NISN Siswa'),
                 Tables\Columns\TextColumn::make('siswa.nama')->label('Nama Siswa'),
                 Tables\Columns\TextColumn::make('siswa.jurusan_id')->label('Jurusan'),
                 Tables\Columns\TextColumn::make('jumlah')
-                    ->label('Jumlah')  
+                    ->label('Jumlah')
                     ->money('IDR', true)
                     ->sortable()
-                    ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.'))
+                    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->alignLeft(),
-            
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat Pada')
                     ->dateTime('d M Y H:i'),
@@ -116,38 +131,38 @@ class BendaharaResource extends Resource
                     ->columnSpanFull()
                     ->extraAttributes(['class' => 'font-bold'])
                     ->alignLeft()
-                    ->visible(fn () => true),
+                    ->visible(fn() => true),
             ])
 
-            ->filters([
-                Filter::make('nama_siswa')
-                    ->form([
-                        TextInput::make('nama')->label('Nama Siswa'),
-                    ])
-                    ->query(function ($query, array $data) {
-                        return $query->when($data['nama'], function ($q) use ($data) {
-                            $q->whereHas('siswa', function ($sub) use ($data) {
-                                $sub->where('nama', 'like', '%' . $data['nama'] . '%');
-                            });
-                        });
-                    }),
+            // ->filters([
+            //     Filter::make('nama_siswa')
+            //         ->form([
+            //             TextInput::make('nama')->label('Nama Siswa'),
+            //         ])
+            //         ->query(function ($query, array $data) {
+            //             return $query->when($data['nama'], function ($q) use ($data) {
+            //                 $q->whereHas('siswa', function ($sub) use ($data) {
+            //                     $sub->where('nama', 'like', '%' . $data['nama'] . '%');
+            //                 });
+            //             });
+            //         }),
 
-                SelectFilter::make('kelas')
-                    ->options([
-                        'X' => 'X',
-                        'XI' => 'XI',
-                        'XII' => 'XII',
-                    ])
-                    ->label('Kelas'),
+            //     SelectFilter::make('kelas')
+            //         ->options([
+            //             'X' => 'X',
+            //             'XI' => 'XI',
+            //             'XII' => 'XII',
+            //         ])
+            //         ->label('Kelas'),
 
-                Filter::make('minimum_kas')
-                    ->form([
-                        TextInput::make('min')->numeric()->label('Minimal Kas'),
-                    ])
-                    ->query(function ($query, array $data) {
-                        return $query->when($data['min'], fn ($q) => $q->where('jumlah', '>=', $data['min']));
-                    }),
-            ])
+            //     Filter::make('minimum_kas')
+            //     // ->form([
+            //     //     TextInput::make('min')->numeric()->label('Minimal Kas'),
+            //     // ])
+            //     // ->query(function ($query, array $data) {
+            //     //     return $query->when($data['min'], fn($q) => $q->where('jumlah', '>=', $data['min']));
+            //     // }),
+            // ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),

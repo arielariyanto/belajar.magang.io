@@ -10,23 +10,22 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    { 
-        Schema::create('siswas', function (Blueprint $table) {
-        $table->id();
-        $table->string('nisn', 20)->nullable();
-        $table->string('nama');
-        $table->string('kelas');
-        $table->string('jurusan_id');
-        $table->timestamps();
-});
+    {
+        Schema::create('jurusans', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama_jurusan');
+            $table->integer('kode_jurusan')->unique();
+            $table->timestamps();
+        });
     }
-
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('jurusans');
     }
+
+
 };

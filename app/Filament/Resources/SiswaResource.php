@@ -2,14 +2,17 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SiswaResource\Pages;
-use App\Models\Siswa;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Siswa;
+use App\Models\Jurusan;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\SiswaResource\Pages;
 
 class SiswaResource extends Resource
 {
@@ -18,87 +21,83 @@ class SiswaResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
     protected static ?string $navigationLabel = 'Data Siswa';
     protected static ?string $pluralModelLabel = 'Siswa';
+    protected static ?string $navigationGroup = 'Manajemen Siswa';
 
     public static function form(Form $form): Form
     {
         return $form->schema([
             Forms\Components\Section::make('Form Siswa')->schema([
-                Forms\Components\TextInput::make('nisn')
-                    ->label('NISN')
+                TextInput::make('nisn')
+                    ->label('Absen Siswa')
                     ->numeric() // Hanya angka
                     ->required()
                     ->maxLength(10)
-                    ->placeholder('Contoh: 1234567890'),
-                Forms\Components\TextInput::make('nama')
+                    ->placeholder('Absen Siswa Angka'),
+                TextInput::make('nama')
                     ->label('Nama Siswa')
                     ->required()
-                    ->placeholder('Contoh: Ahmad Fauzan')
+                    ->placeholder('Huruf Kapital Awal')
                     ->maxLength(100),
+                Select::make('kelas')
+                    ->label('Kelas')
+                    ->required()
+                    ->options([
+                        'X' => 'X',
+                        'XI' => 'XI',
+                        'XII' => 'XII',
+                    ])
+                    ->searchable(),
 
-            Forms\Components\Select::make('kelas')
-                ->label('Kelas')
-                ->required()
-                ->options([
-                    'X' => 'X',
-                    'XI' => 'XI',
-                    'XII' => 'XII',
-                ])
-                ->searchable(),
-
-            Forms\Components\Select::make('jurusan_id')
-                ->label('Jurusan')
-                ->required()
-                ->options([
-                    'KA' => 'KIMIA ANALIS',
-                    'TEKKIN' => 'TEKNIK KIMIA INDUSTRI',
-                    'TKJ' => 'TEKNIK KOMPUTER JARINGAN',
-                    'RPL' => 'REKAYASA PERANGKAT LUNAK',
-                    'AKL' => 'AKUNTANSI',
-                ])
-                ->searchable(),
+                Select::make('jurusan_id')
+                    ->label('Jurusan')
+                    ->options(Jurusan::all()->mapWithKeys(function ($item) {
+                        return [
+                            $item->kode_jurusan => "{$item->nama_jurusan} - {$item->kode_jurusan}",
+                        ];
+                    }))
+                    ->required(),
             ]),
         ]);
     }
 
     public static function table(Table $table): Table
-{
-    return $table
-        ->columns([
-            Tables\Columns\TextColumn::make('nisn')
-                ->label('NISN')
-                ->sortable()
-                ->searchable(),
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('nisn')
+                    ->label('NISN')
+                    ->sortable()
+                    ->searchable(),
 
-            Tables\Columns\TextColumn::make('nama')
-                ->label('Nama Siswa')
-                ->searchable()
-                ->sortable(),
+                Tables\Columns\TextColumn::make('nama')
+                    ->label('Nama Siswa')
+                    ->searchable()
+                    ->sortable(),
 
-            Tables\Columns\TextColumn::make('kelas')
-                ->sortable(),
+                Tables\Columns\TextColumn::make('kelas')
+                    ->label('Kelas')
+                    ->sortable(),
 
-            Tables\Columns\TextColumn::make('jurusan_id')
-                ->label('Jurusan')
-                ->formatStateUsing(fn (string $state) => match ($state) {
-                    'KA' => 'Kimia Analis',
-                    'TEKKIN' => 'Teknik Kimia Industri',
-                    'TKJ' => 'Teknik Komputer Jaringan',
-                    'RPL' => 'Rekayasa Perangkat Lunak',
-                    'AKL' => 'Akuntansi',
-                    default => $state,
-                }),
-        ])
-        ->filters([])
-        ->actions([
-            Tables\Actions\EditAction::make(),
-            Tables\Actions\DeleteAction::make(),
-        ])
-        ->bulkActions([
-            Tables\Actions\BulkActionGroup::make([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]),
-        ]);
-}
+                Tables\Columns\TextColumn::make('jurusan.nama_jurusan')
+                    ->label('Jurusan')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('jurusan.kode_jurusan')
+                    ->label('Kode Jurusan')
+                    ->sortable(),
+
+            ])
+            ->filters([])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
 
     public static function getRelations(): array
     {
