@@ -23,6 +23,11 @@ class Bendahara extends Model
         return $this->belongsTo(Siswa::class);
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function pengeluarans()
     {
         return $this->hasMany(\App\Models\Pengeluaran::class);
