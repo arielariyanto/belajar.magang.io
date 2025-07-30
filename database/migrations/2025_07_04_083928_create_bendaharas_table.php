@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('nama_bendahara');
             $table->string('kelas');
             $table->foreignId('siswa_id')->constrained()->onDelete('cascade');
+            $table->foreignId('jurusan_id');
             $table->integer('jumlah');
             $table->timestamps();
         });
