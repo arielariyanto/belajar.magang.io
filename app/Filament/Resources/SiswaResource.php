@@ -52,11 +52,23 @@ class SiswaResource extends Resource
                     ->label('Jurusan')
                     ->options(Jurusan::all()->mapWithKeys(function ($item) {
                         return [
-                            $item->kode_jurusan => "{$item->nama_jurusan} - {$item->kode_jurusan}",
+                            $item->id => "{$item->nama_jurusan} - {$item->kode_jurusan}",
                         ];
                     }))
+                    ->searchable()
                     ->required(),
+
             ]),
+            Forms\Components\Section::make('Form Bendahara')->schema([
+                Select::make('role')
+                    ->label('Peran Siswa')
+                    ->required()
+                    ->options([
+                        'siswa' => 'Siswa',
+                        'bendahara' => 'Bendahara',
+                    ])
+                    ->reactive(),
+            ])
         ]);
     }
 
@@ -85,6 +97,11 @@ class SiswaResource extends Resource
                 Tables\Columns\TextColumn::make('jurusan.kode_jurusan')
                     ->label('Kode Jurusan')
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('role')
+                    ->label('Peran')
+                    ->badge()
+                    ->color(fn($state) => $state === 'bendahara' ? 'success' : 'gray'),
 
             ])
             ->filters([])
