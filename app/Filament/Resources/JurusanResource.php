@@ -20,10 +20,10 @@ class JurusanResource extends Resource
 {
     protected static ?string $model = Jurusan::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-group';
-    protected static ?string $navigationLabel = 'Data Siswa Jurusan';
+    protected static ?string $navigationLabel = 'Data Jurusan';
     protected static ?string $pluralModelLabel = 'Jurusan';
     protected static ?string $navigationGroup = 'Manajemen Siswa';
-
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {

@@ -25,6 +25,7 @@ class PengeluaranResource extends Resource
     protected static ?string $navigationLabel = 'Data Pengeluaran';
     protected static ?string $pluralModelLabel = 'Pengeluaran';
     protected static ?string $navigationGroup = 'Manajemen Kas';
+    protected static ?int $navigationSort = 4;  
 
     public static function form(Form $form): Form
     {

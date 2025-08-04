@@ -24,6 +24,7 @@ class BendaharaResource extends Resource
     protected static ?string $navigationLabel = 'Data Bendahara';
     protected static ?string $pluralModelLabel = 'Bendahara';
     protected static ?string $navigationGroup = 'Manajemen Kas';
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
