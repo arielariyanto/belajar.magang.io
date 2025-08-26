@@ -27,6 +27,19 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+
+            ->favicon(asset('images/favicon.png'))
+            ->favicon(asset('images/favicon.ico'))
+            ->renderHook(
+                'panels::head.start',
+                fn(): string => '
+        <link rel="icon" type="image/png" sizes="32x32" href="' . asset('images/favicon-32x32.png') . '">
+        <link rel="icon" type="image/png" sizes="192x192" href="' . asset('images/favicon-192x192.png') . '">
+        <link rel="apple-touch-icon" href="' . asset('images/apple-touch-icon.png') . '">
+    '
+            )
+
+
             ->brandName('Kas Kelas')
             ->colors([
                 'primary' => Color::Amber,
